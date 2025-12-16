@@ -7,20 +7,30 @@ import { ExternalLink, Trash2 } from 'lucide-react'
 interface Signal {
   id: number
   coin_name: string
-  hourly_profit: number
-  gate_rate?: number
+  hourly_profit: number | string
+  gate_rate?: number | string
   gate_url?: string
-  binance_rate?: number
+  gate_interval?: string
+  gate_position?: string
+  binance_rate?: number | string
   binance_url?: string
-  mexc_rate?: number
+  binance_interval?: string
+  binance_position?: string
+  mexc_rate?: number | string
   mexc_url?: string
-  ourbit_rate?: number
+  mexc_interval?: string
+  mexc_position?: string
+  ourbit_rate?: number | string
   ourbit_url?: string
-  bitget_rate?: number
+  ourbit_interval?: string
+  ourbit_position?: string
+  bitget_rate?: number | string
   bitget_url?: string
+  bitget_interval?: string
   bitget_position?: string
-  bybit_rate?: number
+  bybit_rate?: number | string
   bybit_url?: string
+  bybit_interval?: string
   bybit_position?: string
   created_at: string
 }
@@ -56,6 +66,43 @@ export default function FundingRate() {
     }
   })
 
+  const renderExchange = (
+    name: string,
+    rate: number | string | undefined | null,
+    url: string | undefined,
+    interval: string | undefined,
+    position: string | undefined
+  ) => {
+    // Convert rate to number if it's a string
+    const rateNum = rate !== undefined && rate !== null ? Number(rate) : null
+    if (rateNum === null || isNaN(rateNum)) return null
+
+    return (
+      <div className="border rounded p-2">
+        <div className="font-medium">{name}</div>
+        <div className={rateNum >= 0 ? 'text-green-600' : 'text-red-600'}>
+          {rateNum.toFixed(4)}%
+        </div>
+        {interval && (
+          <div className="text-xs text-gray-500">Interval: {interval}</div>
+        )}
+        {position && (
+          <div className="text-xs font-semibold text-blue-600">{position}</div>
+        )}
+        {url && (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary-600 hover:underline mt-1 inline-block"
+          >
+            <ExternalLink className="w-3 h-3 inline" /> Open Futures
+          </a>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
@@ -90,7 +137,9 @@ export default function FundingRate() {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">{signal.coin_name}</h3>
                   <span className="text-lg font-semibold text-green-600">
-                    Profit: {signal.hourly_profit}%
+                    Profit: {signal.hourly_profit !== undefined && signal.hourly_profit !== null 
+                      ? Number(signal.hourly_profit).toFixed(4) 
+                      : 'N/A'}%
                   </span>
                 </div>
                 <button
@@ -102,81 +151,12 @@ export default function FundingRate() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {signal.gate_rate !== undefined && (
-                  <div className="border rounded p-2">
-                    <div className="font-medium">GATE</div>
-                    <div className={signal.gate_rate >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      {signal.gate_rate}%
-                    </div>
-                    {signal.gate_url && (
-                      <a
-                        href={signal.gate_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary-600 hover:underline"
-                      >
-                        <ExternalLink className="w-3 h-3 inline" /> Open
-                      </a>
-                    )}
-                  </div>
-                )}
-                {signal.binance_rate !== undefined && (
-                  <div className="border rounded p-2">
-                    <div className="font-medium">BINANCE</div>
-                    <div className={signal.binance_rate >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      {signal.binance_rate}%
-                    </div>
-                    {signal.binance_url && (
-                      <a
-                        href={signal.binance_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary-600 hover:underline"
-                      >
-                        <ExternalLink className="w-3 h-3 inline" /> Open
-                      </a>
-                    )}
-                  </div>
-                )}
-                {signal.mexc_rate !== undefined && (
-                  <div className="border rounded p-2">
-                    <div className="font-medium">MEXC</div>
-                    <div className={signal.mexc_rate >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      {signal.mexc_rate}%
-                    </div>
-                    {signal.mexc_url && (
-                      <a
-                        href={signal.mexc_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary-600 hover:underline"
-                      >
-                        <ExternalLink className="w-3 h-3 inline" /> Open
-                      </a>
-                    )}
-                  </div>
-                )}
-                {signal.bybit_rate !== undefined && (
-                  <div className="border rounded p-2">
-                    <div className="font-medium">BYBIT</div>
-                    <div className={signal.bybit_rate >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      {signal.bybit_rate}%
-                    </div>
-                    {signal.bybit_position && (
-                      <div className="text-xs text-gray-500">{signal.bybit_position}</div>
-                    )}
-                    {signal.bybit_url && (
-                      <a
-                        href={signal.bybit_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary-600 hover:underline"
-                      >
-                        <ExternalLink className="w-3 h-3 inline" /> Open
-                      </a>
-                    )}
-                  </div>
-                )}
+                {renderExchange('GATE', signal.gate_rate, signal.gate_url, signal.gate_interval, signal.gate_position)}
+                {renderExchange('BINANCE', signal.binance_rate, signal.binance_url, signal.binance_interval, signal.binance_position)}
+                {renderExchange('MEXC', signal.mexc_rate, signal.mexc_url, signal.mexc_interval, signal.mexc_position)}
+                {renderExchange('OURBIT', signal.ourbit_rate, signal.ourbit_url, signal.ourbit_interval, signal.ourbit_position)}
+                {renderExchange('BITGET', signal.bitget_rate, signal.bitget_url, signal.bitget_interval, signal.bitget_position)}
+                {renderExchange('BYBIT', signal.bybit_rate, signal.bybit_url, signal.bybit_interval, signal.bybit_position)}
               </div>
             </div>
           ))}

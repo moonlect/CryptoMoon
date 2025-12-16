@@ -132,26 +132,59 @@ class FundingRateParser(SignalParser):
 
             # Parse exchange rates
             exchanges = ['GATE', 'BINANCE', 'MEXC', 'OURBIT', 'BITGET', 'BYBIT']
-            
+
+            # First, try strict pattern on whole message
             for exchange in exchanges:
-                # Pattern for exchange rate
-                pattern = rf'{exchange}\s*\(([^)]+)\):\s*([+-]?[\d.]+)%\s*\(интервал:\s*([^)]+)\)'
+                # Format: EXCHANGE (url): rate% (интервал: interval) (POSITION)
+                pattern = rf'{exchange}\s*\(([^)]+)\):\s*([+-]?[\d.]+)%\s*\(интервал:\s*([^)]+)\)(?:\s*\((LONG|SHORT)\))?'
                 match = re.search(pattern, message_text, re.IGNORECASE)
-                
+
                 if match:
                     url = match.group(1)
                     rate = Decimal(match.group(2))
                     interval = match.group(3).strip()
+                    position = match.group(4)  # Optional position
 
-                    # Set exchange-specific fields
                     data[f'{exchange.lower()}_rate'] = rate
                     data[f'{exchange.lower()}_url'] = url
                     data[f'{exchange.lower()}_interval'] = interval
+                    if position:
+                        data[f'{exchange.lower()}_position'] = position.upper()
 
-                    # Check for position (LONG/SHORT) - usually at the end
-                    position_match = re.search(rf'{exchange}[^)]*\)[^)]*\((LONG|SHORT)\)', message_text, re.IGNORECASE)
-                    if position_match:
-                        data[f'{exchange.lower()}_position'] = position_match.group(1).upper()
+            # Fallback: line-by-line parsing in case formatting differs (e.g. Telegram HTML/Markdown)
+            lines = [line.strip() for line in message_text.splitlines() if line.strip()]
+            for exchange in exchanges:
+                # Skip if already parsed by strict pattern
+                if data.get(f'{exchange.lower()}_rate') is not None:
+                    continue
+
+                for line in lines:
+                    # Line must mention exchange name
+                    if exchange not in line.upper():
+                        continue
+
+                    # URL anywhere in the line
+                    url_match = re.search(r'https?://\S+', line)
+                    # Rate like -0.4563%
+                    rate_match = re.search(r'([+-]?\d+(?:\.\d+)?)\s*%', line)
+                    # Interval after 'интервал:'
+                    interval_match = re.search(r'интервал:\s*([0-9.]+h)', line, re.IGNORECASE)
+                    # Position LONG/SHORT, if present
+                    position_match = re.search(r'\b(LONG|SHORT)\b', line, re.IGNORECASE)
+
+                    if rate_match:
+                        rate = Decimal(rate_match.group(1))
+                        data[f'{exchange.lower()}_rate'] = rate
+
+                        if url_match:
+                            data[f'{exchange.lower()}_url'] = url_match.group(0)
+                        if interval_match:
+                            data[f'{exchange.lower()}_interval'] = interval_match.group(1)
+                        if position_match:
+                            data[f'{exchange.lower()}_position'] = position_match.group(1).upper()
+
+                        # Parsed this exchange successfully, go to next
+                        break
 
             # Validate required fields
             if not data.get('coin_name'):

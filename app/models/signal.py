@@ -36,18 +36,22 @@ class SignalFundingRate(Base):
     gate_rate = Column(Numeric(10, 4))
     gate_url = Column(String(500))
     gate_interval = Column(String(10))
+    gate_position = Column(String(10))  # 'LONG', 'SHORT'
 
     binance_rate = Column(Numeric(10, 4))
     binance_url = Column(String(500))
     binance_interval = Column(String(10))
+    binance_position = Column(String(10))
 
     mexc_rate = Column(Numeric(10, 4))
     mexc_url = Column(String(500))
     mexc_interval = Column(String(10))
+    mexc_position = Column(String(10))  # 'LONG', 'SHORT'
 
     ourbit_rate = Column(Numeric(10, 4))
     ourbit_url = Column(String(500))
     ourbit_interval = Column(String(10))
+    ourbit_position = Column(String(10))
 
     bitget_rate = Column(Numeric(10, 4))
     bitget_url = Column(String(500))

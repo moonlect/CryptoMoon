@@ -69,6 +69,7 @@ BYBIT (https://www.bybit.com/trade/usdt/PIPPINUSDT): -0.2698% (интервал:
         assert float(result['hourly_profit']) == 0.2711
         assert float(result['gate_rate']) == -0.0422
         assert float(result['binance_rate']) == -0.0258
+        assert result['binance_position'] is None
         assert result['bybit_position'] == 'LONG'
 
     def test_parse_invalid_signal(self):

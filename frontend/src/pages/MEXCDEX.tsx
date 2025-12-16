@@ -94,7 +94,9 @@ export default function MEXCDEX() {
                     <h3 className="text-xl font-bold text-gray-900">{signal.coin_name}</h3>
                   </div>
                   <span className="text-lg font-semibold text-primary-600">
-                    Spread: {signal.spread_percent}%
+                    Spread: {signal.spread_percent !== undefined && signal.spread_percent !== null 
+                      ? Number(signal.spread_percent).toFixed(2)
+                      : 'N/A'}%
                   </span>
                 </div>
                 <button
@@ -108,15 +110,27 @@ export default function MEXCDEX() {
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">MEXC Price:</span>
-                  <span className="font-medium">${signal.mexc_price}</span>
+                  <span className="font-medium">
+                    {signal.mexc_price !== undefined && signal.mexc_price !== null 
+                      ? `$${Number(signal.mexc_price).toFixed(8)}`
+                      : 'N/A'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">DEX Price:</span>
-                  <span className="font-medium">${signal.dex_price}</span>
+                  <span className="font-medium">
+                    {signal.dex_price !== undefined && signal.dex_price !== null 
+                      ? `$${Number(signal.dex_price).toFixed(8)}`
+                      : 'N/A'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Max Size:</span>
-                  <span className="font-medium">${signal.max_size_usd}</span>
+                  <span className="font-medium">
+                    {signal.max_size_usd !== undefined && signal.max_size_usd !== null 
+                      ? `$${Number(signal.max_size_usd).toFixed(2)}`
+                      : 'N/A'}
+                  </span>
                 </div>
                 {signal.token_contract && (
                   <div className="text-xs text-gray-500 break-all">
